@@ -1,5 +1,4 @@
 import Image from "next/image";
-import { useState } from "react";
 
 export const CardAvailables = ({ mesa, onUsarMesa }) => {
     const handleUsarMesa = () => {
@@ -9,7 +8,7 @@ export const CardAvailables = ({ mesa, onUsarMesa }) => {
     return (
         <div className="w-[300px] h-[300px] bg-[#CDCDCD] rounded-xl shadow-md shadow-slate-500 flex flex-col justify-center items-center hover:scale-105 duration-100">
             <div className="flex justify-center items-center mb-10">
-                <p className="text-3xl font-semibold">{mesa.numero}</p>
+                <p className="text-3xl font-semibold">{mesa.nombre}</p>
             </div>
             <div className="flex justify-center items-center mb-10">
                 <Image src="/img/icon.png" width={100} height={100} alt="Imagen de mesa" />
