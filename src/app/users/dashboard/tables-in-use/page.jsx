@@ -10,11 +10,7 @@ export default function TablesInUsePage() {
             </div>
             <div className="grid grid-cols-3 gap-20 mt-20">
                 <CardInUse />
-                <CardInUse />
-                <CardInUse />
-                <CardInUse />
-                <CardInUse />
-                <CardInUse />
+                
             </div>
         </main>
     )
