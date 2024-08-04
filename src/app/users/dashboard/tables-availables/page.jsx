@@ -1,9 +1,6 @@
 'use client'
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { CardAvailables } from "@/ui/CardAvailables";
-import { useRouter } from 'next/navigation';
-
-const apiBase = 'http://localhost:3001/api/mesas';
 
 export default function TablesAvailablesPage() {
     const [mesasDisponibles, setMesasDisponibles] = useState([]);
@@ -11,49 +8,31 @@ export default function TablesAvailablesPage() {
     const [numeroEliminar, setNumeroEliminar] = useState("");
     const [errorCrear, setErrorCrear] = useState("");
     const [errorEliminar, setErrorEliminar] = useState("");
-    const router = useRouter();
 
-    useEffect(() => {
-        fetch(`${apiBase}?estado=disponible`)
-            .then(response => response.json())
-            .then(data => setMesasDisponibles(data))
-            .catch(error => console.error("Error al cargar mesas disponibles:", error));
-    }, []);
-
-    const handleCrearMesa = async () => {
-        if (numeroMesa.trim() === "") {
+    const handleCrearMesa = () => {
+        if (!numeroMesa.trim()) {
             setErrorCrear("Ingrese un número de mesa válido.");
             return;
         }
 
-        if (mesasDisponibles.some((mesa) => mesa.nombre === `MESA N • ${numeroMesa}`)) {
+        const nombreMesa = `MESA N • ${numeroMesa}`;
+
+        if (mesasDisponibles.some(mesa => mesa.nombre === nombreMesa)) {
             setErrorCrear("Ya existe una mesa con este número.");
             return;
         }
 
         const nuevaMesa = {
-            nombre: `MESA N • ${numeroMesa}`,
+            id: mesasDisponibles.length + 1,
+            nombre: nombreMesa,
         };
 
-        try {
-            const response = await fetch(apiBase, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(nuevaMesa),
-            });
-            const data = await response.json();
-            setMesasDisponibles([...mesasDisponibles, data]);
-            setNumeroMesa("");
-            setErrorCrear("");
-        } catch (error) {
-            setErrorCrear("Error al crear la mesa.");
-            console.error("Error:", error);
-        }
+        setMesasDisponibles([...mesasDisponibles, nuevaMesa]);
+        setNumeroMesa("");
+        setErrorCrear("");
     };
 
-    const handleEliminarMesa = async () => {
+    const handleEliminarMesa = () => {
         if (numeroEliminar.trim() === "") {
             setErrorEliminar("Ingrese un número de mesa válido.");
             return;
@@ -65,39 +44,14 @@ export default function TablesAvailablesPage() {
             return;
         }
 
-        try {
-            await fetch(apiBase, {
-                method: 'DELETE',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ id: mesaAEliminar.id }),
-            });
-            const nuevasMesas = mesasDisponibles.filter((mesa) => mesa.id !== mesaAEliminar.id);
-            setMesasDisponibles(nuevasMesas);
-            setNumeroEliminar("");
-            setErrorEliminar("");
-        } catch (error) {
-            setErrorEliminar("Error al eliminar la mesa.");
-            console.error("Error:", error);
-        }
+        const nuevasMesas = mesasDisponibles.filter((mesa) => mesa.id !== mesaAEliminar.id);
+        setMesasDisponibles(nuevasMesas);
+        setNumeroEliminar("");
+        setErrorEliminar("");
     };
 
-    const handleUsarMesa = async (id) => {
-        try {
-            await fetch(`${apiBase}/usar`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ id }),
-            });
-            // Actualiza las listas de mesas
-            setMesasDisponibles(mesasDisponibles.filter(mesa => mesa.id !== id));
-            router.push('/tables-in-use'); // Redirige a la página de mesas en uso
-        } catch (error) {
-            console.error("Error al usar la mesa:", error);
-        }
+    const handleUsarMesa = (mesa) => {
+        console.log("Usar mesa:", mesa);
     };
 
     return (
@@ -120,6 +74,7 @@ export default function TablesAvailablesPage() {
                     >
                         Crear mesa
                     </button>
+                    {errorCrear && <p className="text-red-500">{errorCrear}</p>}
                     <input
                         type="text"
                         placeholder="Número de mesa a eliminar"
@@ -133,17 +88,12 @@ export default function TablesAvailablesPage() {
                     >
                         Eliminar mesa
                     </button>
+                    {errorEliminar && <p className="text-red-500">{errorEliminar}</p>}
                 </div>
             </div>
-            {errorCrear && <p className="text-red-500 mt-2">{errorCrear}</p>}
-            {errorEliminar && <p className="text-red-500 mt-2">{errorEliminar}</p>}
-            <div className="grid grid-cols-3 gap-20 mt-20">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 mt-5">
                 {mesasDisponibles.map((mesa) => (
-                    <CardAvailables
-                        key={mesa.id}
-                        mesa={mesa}
-                        onEliminar={() => handleUsarMesa(mesa.id)}
-                    />
+                    <CardAvailables key={mesa.id} mesa={mesa} onUsarMesa={handleUsarMesa} />
                 ))}
             </div>
         </main>
